@@ -30,7 +30,7 @@ from app.models.finding import ReviewFinding
 target_metadata = Base.metadata
 
 # Set the sqlalchemy url from our app settings
-config.set_main_option("sqlalchemy.url", settings.SQLALCHEMY_DATABASE_URI)
+config.set_main_option("sqlalchemy.url", settings.SQLALCHEMY_DATABASE_URI.replace("%", "%%"))
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:

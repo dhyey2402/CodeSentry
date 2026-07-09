@@ -1,0 +1,231 @@
+@import "tailwindcss";
+
+/* ===================================================
+   CodeSentry Design System — Apple iOS / VisionOS Style
+   =================================================== */
+
+@theme {
+  --color-text-primary: #ffffff;
+  --color-text-secondary: rgba(255, 255, 255, 0.6);
+  --color-text-muted: rgba(255, 255, 255, 0.4);
+
+  --color-accent-blue: #0A84FF;
+  --color-accent-indigo: #5E5CE6;
+  --color-accent-purple: #BF5AF2;
+  --color-accent-pink: #FF375F;
+  --color-accent-green: #32D74B;
+  --color-accent-orange: #FF9F0A;
+
+  --font-family-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+
+  --animate-fade-in: fade-in 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+  --animate-slide-up: slide-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* --- Keyframe Animations --- */
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes mesh-movement {
+  0% { background-position: 0% 0%; }
+  50% { background-position: 100% 100%; }
+  100% { background-position: 0% 0%; }
+}
+
+@keyframes float-slow {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-20px) scale(1.05); }
+}
+
+/* --- Global Base Styles --- */
+@layer base {
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    letter-spacing: -0.015em; /* Tighter Apple-like tracking */
+  }
+
+  body {
+    margin: 0;
+    font-family: var(--font-family-sans);
+    color: #ffffff;
+    background-color: #000000;
+    overflow-x: hidden;
+  }
+
+  /* Custom ambient mesh background for the entire app */
+  .apple-ambient-bg {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: -1;
+    background-color: #050508;
+    overflow: hidden;
+  }
+
+  .ambient-blob-1, .ambient-blob-2, .ambient-blob-3 {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(140px);
+    opacity: 0.25;
+    animation: float-slow 20s infinite ease-in-out;
+  }
+
+  .ambient-blob-1 {
+    top: -10%; left: -10%;
+    width: 60vw; height: 60vw;
+    background: radial-gradient(circle, #5E5CE6 0%, transparent 70%);
+    animation-delay: 0s;
+  }
+
+  .ambient-blob-2 {
+    bottom: -20%; right: -10%;
+    width: 70vw; height: 70vw;
+    background: radial-gradient(circle, #BF5AF2 0%, transparent 70%);
+    animation-delay: -5s;
+  }
+
+  .ambient-blob-3 {
+    top: 40%; left: 30%;
+    width: 50vw; height: 50vw;
+    background: radial-gradient(circle, #0A84FF 0%, transparent 70%);
+    animation-delay: -10s;
+  }
+
+  ::selection {
+    background: rgba(94, 92, 230, 0.4);
+  }
+
+  ::-webkit-scrollbar {
+    width: 0px; /* Hidden scrollbar for cleaner iOS look */
+  }
+}
+
+/* --- Reusable Utility Classes --- */
+@layer components {
+  /* Ultra-Premium Glass Effect (Cards, Modals) */
+  .apple-glass {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(40px) saturate(180%);
+    -webkit-backdrop-filter: blur(40px) saturate(180%);
+    border: 0.5px solid rgba(255, 255, 255, 0.15);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    border-radius: 24px;
+    transition: all 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+  }
+
+  .apple-glass:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border: 0.5px solid rgba(255, 255, 255, 0.3);
+    transform: translateY(-4px) scale(1.01);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  }
+
+  /* Floating Panels (Sidebar, Navbar) */
+  .apple-panel {
+    background: rgba(10, 10, 10, 0.4);
+    backdrop-filter: blur(50px) saturate(200%);
+    -webkit-backdrop-filter: blur(50px) saturate(200%);
+    border: 0.5px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+    border-radius: 32px;
+  }
+
+  /* Glass Input Fields */
+  .apple-input {
+    background: rgba(0, 0, 0, 0.2);
+    border: 0.5px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 12px 16px;
+    color: #ffffff;
+    font-size: 0.9375rem; /* 15px - Apple standard */
+    outline: none;
+    transition: all 0.2s ease;
+    width: 100%;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+  }
+
+  .apple-input::placeholder {
+    color: rgba(255, 255, 255, 0.4);
+  }
+
+  .apple-input:focus {
+    border-color: rgba(255, 255, 255, 0.3);
+    background: rgba(0, 0, 0, 0.3);
+    box-shadow: 0 0 0 3px rgba(94, 92, 230, 0.3), inset 0 2px 4px rgba(0,0,0,0.1);
+  }
+
+  /* Apple Solid Buttons */
+  .apple-btn-primary {
+    background: #ffffff;
+    color: #000000;
+    border: none;
+    border-radius: 9999px; /* Pill shape */
+    padding: 12px 24px;
+    font-weight: 600;
+    font-size: 0.9375rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 12px rgba(255, 255, 255, 0.15);
+  }
+
+  .apple-btn-primary:hover {
+    transform: scale(1.02);
+    box-shadow: 0 6px 16px rgba(255, 255, 255, 0.25);
+    background: #f0f0f5;
+  }
+
+  .apple-btn-primary:active {
+    transform: scale(0.98);
+  }
+
+  /* Apple Translucent Buttons */
+  .apple-btn-glass {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    color: #ffffff;
+    border: 0.5px solid rgba(255, 255, 255, 0.1);
+    border-radius: 9999px;
+    padding: 10px 20px;
+    font-weight: 500;
+    font-size: 0.9375rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .apple-btn-glass:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.2);
+  }
+
+  /* Mini Badges */
+  .apple-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 10px;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    backdrop-filter: blur(10px);
+    border: 0.5px solid rgba(255,255,255,0.1);
+  }
+
+  .apple-badge-blue { background: rgba(10, 132, 255, 0.15); color: #5E5CE6; }
+  .apple-badge-green { background: rgba(50, 215, 75, 0.15); color: #32D74B; }
+  .apple-badge-orange { background: rgba(255, 159, 10, 0.15); color: #FF9F0A; }
+  .apple-badge-red { background: rgba(255, 55, 95, 0.15); color: #FF375F; }
+}
