@@ -1,0 +1,44 @@
+"""
+core/config.py
+
+This file is responsible for loading and validating environment variables.
+Using Pydantic Settings ensures that our application crashes early if a required
+environment variable is missing, rather than failing randomly during runtime.
+
+Why it is needed:
+1. Centralized configuration management.
+2. Type validation for environment variables (e.g., ensuring port is an int).
+3. Easy access to configuration anywhere in the app.
+"""
+
+from typing import Any, Dict, Optional
+from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic import PostgresDsn, validator
+
+class Settings(BaseSettings):
+    PROJECT_NAME: str = "AI Code Review Assistant"
+    API_V1_STR: str = "/api/v1"
+
+    # Security
+    SECRET_KEY: str
+    ALGORITHM: str = "HS256"
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
+
+    # Database
+    POSTGRES_SERVER: str
+    POSTGRES_USER: str
+    POSTGRES_PASSWORD: str
+    POSTGRES_DB: str
+    POSTGRES_PORT: str
+
+    @property
+    def SQLALCHEMY_DATABASE_URI(self) -> str:
+        """
+        Constructs the SQLAlchemy database URI from components.
+        """
+        return f"postgresql+psycopg://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_SERVER}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
+
+    # Load from .env file
+    model_config = SettingsConfigDict(env_file=".env", case_sensitive=True)
+
+settings = Settings()
