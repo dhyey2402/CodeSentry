@@ -1,48 +1,72 @@
 import React from 'react';
-import { Bell, Search } from 'lucide-react';
+import { useLocation, Link } from 'react-router-dom';
+import { Bell, Moon, Sun, Monitor, Menu } from 'lucide-react';
+import { useTheme } from './ThemeProvider';
+import { Avatar } from './ui/Avatar';
+import { Button } from './ui/Button';
+import { Breadcrumbs } from './ui/Breadcrumbs';
 
-const Navbar = () => {
+const Navbar = ({ isSidebarOpen, setIsSidebarOpen }) => {
+  const { theme, setTheme } = useTheme();
+  const location = useLocation();
+
+  // Generate breadcrumbs based on pathname
+  const generateBreadcrumbs = () => {
+    const paths = location.pathname.split('/').filter(Boolean);
+    if (paths.length === 0) return [{ label: 'Dashboard', href: '/dashboard' }];
+
+    return paths.map((path, index) => {
+      const href = '/' + paths.slice(0, index + 1).join('/');
+      const label = path.charAt(0).toUpperCase() + path.slice(1);
+      return { label, href: index === paths.length - 1 ? null : href };
+    });
+  };
+
+  const cycleTheme = () => {
+    if (theme === 'system') setTheme('light');
+    else if (theme === 'light') setTheme('dark');
+    else setTheme('system');
+  };
+
+  const ThemeIcon = () => {
+    if (theme === 'light') return <Sun className="h-5 w-5" />;
+    if (theme === 'dark') return <Moon className="h-5 w-5" />;
+    return <Monitor className="h-5 w-5" />;
+  };
+
   return (
-    <header className="h-[68px] shrink-0 apple-panel flex items-center justify-between px-6 z-20">
-      
-      {/* Search Bar - Integrated Apple Style */}
-      <div className="flex-1 max-w-md">
-        <div className="relative">
-          <span className="absolute inset-y-0 left-0 flex items-center pl-3.5">
-            <Search className="w-4 h-4 text-white/40" />
-          </span>
-          <input
-            type="text"
-            className="w-full bg-black/20 border border-white/10 rounded-[16px] pl-10 pr-4 py-2 text-[15px] text-white placeholder-white/30 focus:outline-none focus:bg-black/40 focus:border-white/20 transition-all shadow-inner"
-            placeholder="Search projects..."
-          />
-        </div>
+    <header className="sticky top-0 z-10 flex items-center justify-between h-16 px-4 md:px-6 bg-background/80 backdrop-blur-md border-b border-border">
+      <div className="flex items-center gap-4">
+        {/* Mobile Sidebar Toggle (only visible on small screens when we implement responsive sidebar later, or always visible here as a backup) */}
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          className="md:hidden"
+          onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+        >
+          <Menu className="h-5 w-5" />
+        </Button>
+        <Breadcrumbs items={generateBreadcrumbs()} />
       </div>
 
-      {/* Actions */}
-      <div className="flex items-center gap-5">
+      <div className="flex items-center gap-2 md:gap-4">
+        <Button variant="ghost" size="icon" className="text-text-muted hover:text-text-primary rounded-full">
+          <Bell className="h-5 w-5" />
+        </Button>
         
-        {/* Notification Bell */}
-        <button
-          className="relative p-2.5 rounded-full bg-white/5 border border-white/10 hover:bg-white/15 transition-colors cursor-pointer text-white/80 hover:text-white"
-        >
-          <Bell className="w-5 h-5" />
-          <span className="absolute top-0 right-0 w-3 h-3 rounded-full bg-[#FF375F] border-2 border-transparent shadow-[0_0_8px_rgba(255,55,95,0.6)]"></span>
-        </button>
+        <Button variant="ghost" size="icon" onClick={cycleTheme} className="text-text-muted hover:text-text-primary rounded-full">
+          <ThemeIcon />
+        </Button>
 
-        {/* Divider */}
-        <div className="h-8 w-[1px] bg-white/10" />
+        <div className="h-8 w-px bg-border mx-1 md:mx-2" />
 
-        {/* Profile Avatar */}
-        <div className="flex items-center gap-3 cursor-pointer group">
-          <div className="text-right hidden sm:block">
-            <p className="text-[14px] font-semibold text-white leading-tight group-hover:opacity-80 transition-opacity">Developer</p>
-            <p className="text-[12px] text-white/50">Pro Plan</p>
+        <Link to="/profile" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
+          <div className="hidden md:flex flex-col items-end">
+            <span className="text-sm font-medium leading-none text-text-primary">Admin User</span>
+            <span className="text-xs text-text-muted mt-1">admin@codesentry.ai</span>
           </div>
-          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#5E5CE6] to-[#0A84FF] border border-white/20 flex items-center justify-center text-white font-bold shadow-lg shadow-[#5E5CE6]/20">
-            D
-          </div>
-        </div>
+          <Avatar fallback="A" />
+        </Link>
       </div>
     </header>
   );

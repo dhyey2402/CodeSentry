@@ -1,130 +1,255 @@
 import React, { useState, useRef } from 'react';
-import { UploadCloud, File, AlertCircle, CheckCircle2, Loader2 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Upload as UploadIcon, FileCode2, CheckCircle2, XCircle, AlertCircle } from 'lucide-react';
+import { api } from '../api';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/Card';
+import { Button } from '../components/ui/Button';
+import { ProgressBar } from '../components/ui/ProgressBar';
+import { Badge } from '../components/ui/Badge';
+import { Alert } from '../components/ui/Alert';
 
 const Upload = () => {
   const [file, setFile] = useState(null);
-  const [status, setStatus] = useState('idle');
-  const [message, setMessage] = useState('');
-  const [dragActive, setDragActive] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const [uploadState, setUploadState] = useState('idle'); // idle, uploading, success, error
+  const [progress, setProgress] = useState(0);
+  const [statusText, setStatusText] = useState('');
+  const [error, setError] = useState(null);
   const fileInputRef = useRef(null);
+  const navigate = useNavigate();
 
-  const processFile = (selectedFile) => {
-    const validExtensions = ['.py', '.js'];
-    const fileExt = selectedFile.name.substring(selectedFile.name.lastIndexOf('.'));
-    
-    if (!validExtensions.includes(fileExt)) {
-      setStatus('error');
-      setMessage('Unsupported file type. Please upload .py or .js');
-      setFile(null);
-      return;
-    }
-    if (selectedFile.size > 5 * 1024 * 1024) {
-      setStatus('error');
-      setMessage('File exceeds 5MB limit.');
-      setFile(null);
-      return;
-    }
-    setFile(selectedFile);
-    setStatus('idle');
-    setMessage('');
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    setIsDragging(true);
   };
 
-  const handleDrag = (e) => {
+  const handleDragLeave = (e) => {
     e.preventDefault();
-    e.stopPropagation();
-    if (e.type === "dragenter" || e.type === "dragover") setDragActive(true);
-    else if (e.type === "dragleave") setDragActive(false);
+    setIsDragging(false);
+  };
+
+  const validateFile = (selectedFile) => {
+    if (!selectedFile) return false;
+    if (!selectedFile.name.endsWith('.py')) {
+      setError('Currently only Python (.py) files are supported.');
+      setUploadState('error');
+      return false;
+    }
+    if (selectedFile.size > 5 * 1024 * 1024) {
+      setError('File size must be less than 5MB.');
+      setUploadState('error');
+      return false;
+    }
+    return true;
   };
 
   const handleDrop = (e) => {
     e.preventDefault();
-    e.stopPropagation();
-    setDragActive(false);
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) processFile(e.dataTransfer.files[0]);
+    setIsDragging(false);
+    setError(null);
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      const droppedFile = e.dataTransfer.files[0];
+      if (validateFile(droppedFile)) {
+        setFile(droppedFile);
+      }
+    }
   };
 
-  const handleUpload = () => {
+  const handleFileChange = (e) => {
+    setError(null);
+    if (e.target.files && e.target.files.length > 0) {
+      const selectedFile = e.target.files[0];
+      if (validateFile(selectedFile)) {
+        setFile(selectedFile);
+      }
+    }
+  };
+
+  const runPipeline = async () => {
     if (!file) return;
-    setStatus('uploading');
-    setMessage('Processing file through AI Engine...');
-    setTimeout(() => {
-      setStatus('success');
-      setMessage('Analysis complete. 3 issues found.');
-    }, 2500);
+    
+    setUploadState('uploading');
+    setProgress(10);
+    setStatusText('Uploading file...');
+
+    try {
+      // 1. Upload
+      const project = await api.uploadFile(file);
+      setProgress(20);
+      setStatusText('Running Static Analysis...');
+
+      // 1.5 Pylint
+      await api.analyzePylint(project.id);
+      setProgress(40);
+      setStatusText('Running Security Scan...');
+
+      // 3. Security
+      await api.analyzeSecurity(project.id);
+      setProgress(50);
+      setStatusText('Calculating Complexity Analysis...');
+
+      // 4. Complexity
+      await api.analyzeComplexity(project.id);
+      setProgress(60);
+      setStatusText('AI Understanding Code...');
+
+      // Optimistic UI progress while AI runs
+      const aiInterval = setInterval(() => {
+        setProgress(p => {
+          if (p < 75) return p + 1;
+          if (p === 75) setStatusText('Generating Suggestions...');
+          if (p < 90) return p + 1;
+          if (p === 90) setStatusText('Writing Documentation...');
+          if (p < 95) return p + 1;
+          return p;
+        });
+      }, 800);
+
+      // 2. AI Review
+      const review = await api.analyzeAI(project.id);
+      
+      clearInterval(aiInterval);
+      setProgress(100);
+      setStatusText('Analysis Complete!');
+      setUploadState('success');
+
+      setTimeout(() => {
+        navigate(`/reviews/${review.id}`);
+      }, 1500);
+
+    } catch (err) {
+      console.error(err);
+      setError(err.message || 'Analysis pipeline failed.');
+      setUploadState('error');
+    }
   };
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-8">
-      <div className="text-center mb-10 animate-[slide-up_0.4s_ease-out]">
-        <h1 className="text-3xl font-bold tracking-tight text-white mb-2">Upload Code</h1>
-        <p className="text-[15px] text-white/60">Run static analysis on your Python or JavaScript files.</p>
+    <div className="max-w-3xl mx-auto py-8">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold tracking-tight">Upload Codebase</h1>
+        <p className="text-text-muted mt-2">
+          Upload your Python file to start a comprehensive automated review.
+        </p>
       </div>
 
-      <div className="apple-glass p-8 relative overflow-hidden animate-[slide-up_0.5s_ease-out_0.1s_both]">
-        
-        {/* Animated blurred blob behind the dropzone */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-[#0A84FF] rounded-full mix-blend-screen filter blur-[100px] opacity-20 pointer-events-none"></div>
+      <Card>
+        <CardContent className="pt-6">
+          <AnimatePresence mode="wait">
+            {uploadState === 'idle' || uploadState === 'error' ? (
+              <motion.div
+                key="upload-box"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                className="space-y-6"
+              >
+                {error && (
+                  <Alert variant="destructive">
+                    <span className="font-medium">{error}</span>
+                  </Alert>
+                )}
+                
+                <div 
+                  className={`relative border-2 border-dashed rounded-xl p-12 flex flex-col items-center justify-center transition-all ${
+                    isDragging 
+                      ? 'border-accent bg-accent/5' 
+                      : file 
+                        ? 'border-success bg-success/5'
+                        : 'border-border hover:border-text-muted bg-surface/50'
+                  }`}
+                  onDragOver={handleDragOver}
+                  onDragLeave={handleDragLeave}
+                  onDrop={handleDrop}
+                  onClick={() => !file && fileInputRef.current?.click()}
+                >
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept=".py"
+                    onChange={handleFileChange}
+                    className="hidden"
+                  />
+                  
+                  {file ? (
+                    <div className="text-center">
+                      <div className="h-16 w-16 bg-success/20 text-success rounded-full flex items-center justify-center mx-auto mb-4">
+                        <FileCode2 className="h-8 w-8" />
+                      </div>
+                      <h3 className="text-lg font-semibold">{file.name}</h3>
+                      <p className="text-sm text-text-muted mt-1">{(file.size / 1024).toFixed(2)} KB</p>
+                      <div className="mt-6 flex gap-3 justify-center">
+                        <Button variant="outline" onClick={(e) => { e.stopPropagation(); setFile(null); }}>
+                          Change File
+                        </Button>
+                        <Button onClick={(e) => { e.stopPropagation(); runPipeline(); }}>
+                          Start Analysis
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-center pointer-events-none">
+                      <div className="h-16 w-16 bg-surface border border-border text-text-muted rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm">
+                        <UploadIcon className="h-8 w-8" />
+                      </div>
+                      <h3 className="text-lg font-semibold mb-1">Click or drag file to this area to upload</h3>
+                      <p className="text-sm text-text-muted max-w-xs mx-auto">
+                        Support for a single .py file up to 5MB. 
+                      </p>
+                    </div>
+                  )}
+                </div>
 
-        {status === 'error' && (
-          <div className="mb-6 p-4 rounded-[16px] bg-[#FF375F]/10 border border-[#FF375F]/20 flex items-center gap-3">
-            <AlertCircle className="w-5 h-5 text-[#FF375F]" />
-            <p className="text-[15px] font-medium text-[#FF375F]">{message}</p>
-          </div>
-        )}
-
-        {status === 'success' && (
-          <div className="mb-6 p-4 rounded-[16px] bg-[#32D74B]/10 border border-[#32D74B]/20 flex items-center gap-3">
-            <CheckCircle2 className="w-5 h-5 text-[#32D74B]" />
-            <p className="text-[15px] font-medium text-[#32D74B]">{message}</p>
-          </div>
-        )}
-
-        <div
-          className={`relative z-10 border-2 border-dashed rounded-[24px] p-12 text-center transition-all duration-300 ${
-            dragActive ? 'border-[#0A84FF] bg-[#0A84FF]/10 scale-[1.02]' : 'border-white/20 bg-white/5 hover:bg-white/10'
-          }`}
-          onDragEnter={handleDrag} onDragLeave={handleDrag} onDragOver={handleDrag} onDrop={handleDrop}
-        >
-          {!file ? (
-            <div className="flex flex-col items-center">
-              <UploadCloud className={`w-14 h-14 mb-4 ${dragActive ? 'text-[#0A84FF]' : 'text-white/40'} transition-colors`} />
-              <h3 className="text-[19px] font-semibold text-white mb-2">Select a file or drag and drop here</h3>
-              <p className="text-[14px] text-white/50 mb-8">Python (.py) or JavaScript (.js) up to 5MB</p>
-              <input type="file" ref={fileInputRef} className="hidden" onChange={(e) => processFile(e.target.files[0])} accept=".py,.js" />
-              <button onClick={() => fileInputRef.current?.click()} className="apple-btn-glass">
-                Browse Files
-              </button>
-            </div>
-          ) : (
-            <div className="flex flex-col items-center">
-              <div className="w-20 h-20 rounded-[20px] bg-white/10 border border-white/20 flex items-center justify-center mb-4 relative shadow-lg">
-                <File className="w-10 h-10 text-white" />
-                {status === 'uploading' && (
-                  <div className="absolute inset-0 bg-black/40 rounded-[20px] backdrop-blur-sm flex items-center justify-center">
-                    <Loader2 className="w-6 h-6 text-white animate-spin" />
+                <div className="flex items-center justify-center gap-2">
+                  <span className="text-sm text-text-muted">Supported Languages:</span>
+                  <Badge variant="outline" className="bg-surface">Python</Badge>
+                  <Badge variant="outline" className="bg-surface opacity-50 cursor-not-allowed" title="Coming soon">JavaScript</Badge>
+                  <Badge variant="outline" className="bg-surface opacity-50 cursor-not-allowed" title="Coming soon">TypeScript</Badge>
+                </div>
+              </motion.div>
+            ) : (
+              <motion.div
+                key="progress-box"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="py-12 px-6 flex flex-col items-center justify-center text-center space-y-6"
+              >
+                {uploadState === 'success' ? (
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ type: "spring", bounce: 0.5 }}
+                    className="h-20 w-20 bg-success/20 text-success rounded-full flex items-center justify-center mb-2"
+                  >
+                    <CheckCircle2 className="h-10 w-10" />
+                  </motion.div>
+                ) : (
+                  <div className="relative h-20 w-20 mb-2">
+                    <svg className="animate-spin h-full w-full text-accent" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
                   </div>
                 )}
-              </div>
-              <p className="text-[17px] font-semibold text-white">{file.name}</p>
-              <p className="text-[14px] text-white/50 mt-1">{(file.size / 1024).toFixed(1)} KB</p>
+                
+                <div>
+                  <h3 className="text-xl font-semibold mb-2">{uploadState === 'success' ? 'Analysis Complete!' : 'Analyzing your code...'}</h3>
+                  <p className="text-text-muted mb-6">{statusText}</p>
+                </div>
 
-              {status === 'uploading' ? (
-                <div className="mt-8 w-full max-w-xs">
-                  <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
-                    <div className="h-full bg-white rounded-full w-full animate-[slide-in-left_2s_ease-out]" />
+                <div className="w-full max-w-md space-y-2">
+                  <div className="flex justify-between text-sm text-text-muted">
+                    <span>Progress</span>
+                    <span>{progress}%</span>
                   </div>
-                  <p className="text-[14px] text-white/60 mt-4 animate-pulse">{message}</p>
+                  <ProgressBar value={progress} />
                 </div>
-              ) : (
-                <div className="mt-10 flex gap-4">
-                  <button onClick={() => { setFile(null); setStatus('idle'); }} className="apple-btn-glass">Cancel</button>
-                  <button onClick={handleUpload} className="apple-btn-primary">Start Analysis</button>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-      </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </CardContent>
+      </Card>
     </div>
   );
 };

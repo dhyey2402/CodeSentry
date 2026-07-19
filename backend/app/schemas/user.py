@@ -24,10 +24,12 @@ class UserCreate(UserBase):
 class UserUpdate(BaseModel):
     full_name: Optional[str] = None
     password: Optional[str] = None
+    preferences: Optional[dict] = None
 
 class UserResponse(UserBase):
     id: uuid.UUID
     is_active: bool
+    preferences: Optional[dict] = None
     created_at: datetime
     
     # This enables Pydantic to read data even if it is not a dict, 

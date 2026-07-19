@@ -1,79 +1,169 @@
-import React from 'react';
-import { Activity, AlertTriangle, ShieldCheck, ChevronRight } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Activity, Search, ShieldCheck, Filter, FileCode2 } from 'lucide-react';
+import { api } from '../api';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../components/ui/Table';
+import { Badge } from '../components/ui/Badge';
+import { Card, CardContent } from '../components/ui/Card';
+import { Input } from '../components/ui/Input';
+import { Button } from '../components/ui/Button';
+
+const StatCard = ({ title, value, subtitle }) => (
+  <Card>
+    <CardContent className="p-6">
+      <div className="text-sm font-medium text-text-muted mb-1">{title}</div>
+      <div className="text-3xl font-bold tracking-tight mb-1">{value}</div>
+      {subtitle && <div className="text-xs text-text-muted">{subtitle}</div>}
+    </CardContent>
+  </Card>
+);
 
 const Reviews = () => {
-  const dummyReviews = [
-    { id: 1, project: 'auth_service.py', date: 'Oct 24, 2026', score: 9.2, issues: { high: 0, med: 2, low: 5 }, status: 'Clean' },
-    { id: 2, project: 'payment.js', date: 'Oct 23, 2026', score: 6.8, issues: { high: 3, med: 8, low: 12 }, status: 'Needs Work' },
-    { id: 3, project: 'user_model.py', date: 'Oct 20, 2026', score: 8.5, issues: { high: 1, med: 1, low: 3 }, status: 'Good' },
-  ];
+  const navigate = useNavigate();
+  const [searchTerm, setSearchTerm] = useState('');
+  const [reviews, setReviews] = useState([]);
+  const [stats, setStats] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  const getScoreColor = (score) => {
-    if (score >= 9) return '#32D74B';
-    if (score >= 7) return '#FF9F0A';
-    return '#FF375F';
-  };
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const [statsData, reviewsData] = await Promise.all([
+          api.getStats(),
+          api.getReviews()
+        ]);
+        setStats(statsData);
+        // Format reviews for UI
+        setReviews(reviewsData.map(r => ({
+          id: r.id,
+          project: r.project?.name || 'Unknown Project',
+          date: new Date(r.created_at).toLocaleDateString(),
+          pylint_score: parseFloat(r.pylint_score || 0),
+          ai_score: parseFloat(r.ai_score || 0),
+          issues: {
+            high: r.findings?.filter(f => f.severity === 'HIGH' || f.severity === 'CRITICAL').length || 0,
+            med: r.findings?.filter(f => f.severity === 'MEDIUM' || f.severity === 'WARNING').length || 0,
+            low: r.findings?.filter(f => f.severity === 'LOW' || f.severity === 'INFO').length || 0,
+          }
+        })));
+      } catch (err) {
+        console.error('Failed to fetch review history', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
+  const filteredReviews = reviews.filter(r => r.project.toLowerCase().includes(searchTerm.toLowerCase()));
 
   return (
-    <div className="px-2">
-      <div className="mb-8 animate-[fade-in_0.4s_ease-out]">
-        <h1 className="text-3xl font-bold tracking-tight text-white mb-2">Analysis Reviews</h1>
-        <p className="text-[15px] text-white/60">Detailed static analysis reports.</p>
+    <div className="py-6 animate-in fade-in duration-500">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold tracking-tight">Review History</h1>
+        <p className="text-text-muted mt-2">View and manage past code analysis reports and AI insights.</p>
       </div>
 
-      <div className="apple-glass overflow-hidden animate-[slide-up_0.5s_ease-out]">
-        <div className="divide-y divide-white/10">
-          {dummyReviews.map((review, idx) => {
-            const scoreColor = getScoreColor(review.score);
-            return (
-              <div
-                key={review.id}
-                className="p-6 flex flex-col md:flex-row md:items-center justify-between gap-6 hover:bg-white/5 transition-colors cursor-pointer group"
-              >
-                <div className="flex items-center gap-5">
-                  <div className="w-14 h-14 rounded-[16px] bg-white/10 flex items-center justify-center shrink-0 border border-white/10 shadow-inner">
-                    <Activity className="w-7 h-7 text-[#BF5AF2]" />
-                  </div>
-                  <div>
-                    <h3 className="text-[17px] font-semibold text-white">{review.project}</h3>
-                    <p className="text-[13px] text-white/50 mt-1">Reviewed on {review.date}</p>
-                  </div>
-                </div>
-
-                <div className="flex gap-6 md:px-8">
-                  {[
-                    { label: 'High', count: review.issues.high, color: '#FF375F' },
-                    { label: 'Med', count: review.issues.med, color: '#FF9F0A' },
-                    { label: 'Low', count: review.issues.low, color: '#32D74B' }
-                  ].map(issue => (
-                    <div key={issue.label} className="text-center">
-                      <div className="flex items-center gap-1.5 justify-center mb-1.5">
-                        <AlertTriangle className="w-3.5 h-3.5" style={{ color: issue.color }} />
-                        <span className="text-[12px] font-semibold text-white/60 uppercase">{issue.label}</span>
-                      </div>
-                      <span className="text-[16px] font-bold" style={{ color: issue.count > 0 ? 'white' : 'rgba(255,255,255,0.3)' }}>
-                        {issue.count}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="flex items-center justify-between md:justify-end gap-6">
-                  <div className="flex flex-col items-end">
-                    <div className="flex items-center gap-2">
-                      <ShieldCheck className="w-5 h-5" style={{ color: scoreColor }} />
-                      <span className="text-[26px] font-bold tracking-tight" style={{ color: scoreColor }}>
-                        {review.score}
-                      </span>
-                    </div>
-                  </div>
-                  <ChevronRight className="w-5 h-5 text-white/30 group-hover:text-white transition-colors" />
-                </div>
-              </div>
-            );
-          })}
+      {stats && (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+          <StatCard title="Total Reviews" value={stats.total_reviews} subtitle="Across all projects" />
+          <StatCard title="Avg Quality Score" value={`${stats.average_quality_score}/10`} subtitle="Pylint static analysis" />
+          <StatCard title="Avg Complexity" value={stats.average_complexity} subtitle="Cyclomatic complexity" />
+          <StatCard title="Avg AI Score" value={`${stats.average_ai_score}/10`} subtitle="Deep AI analysis" />
         </div>
-      </div>
+      )}
+
+      <Card>
+        <div className="p-4 border-b border-border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="relative w-full max-w-md">
+            <Search className="w-4 h-4 absolute left-3 top-3 text-text-muted" />
+            <Input 
+              type="text" 
+              placeholder="Search projects..." 
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-9"
+            />
+          </div>
+          <Button variant="outline" className="shrink-0">
+            <Filter className="w-4 h-4 mr-2" />
+            Filters
+          </Button>
+        </div>
+        
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Project Name</TableHead>
+              <TableHead>Date</TableHead>
+              <TableHead>High Issues</TableHead>
+              <TableHead>Med Issues</TableHead>
+              <TableHead>Low Issues</TableHead>
+              <TableHead className="text-right">Quality Score</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {loading ? (
+              <TableRow>
+                <TableCell colSpan={6} className="text-center py-12 text-text-muted">Loading reviews...</TableCell>
+              </TableRow>
+            ) : filteredReviews.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={6} className="text-center py-12 text-text-muted">No reviews found matching your search.</TableCell>
+              </TableRow>
+            ) : (
+              filteredReviews.map((review) => (
+                <TableRow 
+                  key={review.id} 
+                  className="cursor-pointer group"
+                  onClick={() => navigate(`/reviews/${review.id}`)}
+                >
+                  <TableCell className="font-medium">
+                    <div className="flex items-center gap-3">
+                      <div className="h-8 w-8 rounded bg-accent/10 flex items-center justify-center">
+                        <FileCode2 className="w-4 h-4 text-accent" />
+                      </div>
+                      <span className="group-hover:text-accent transition-colors">{review.project}</span>
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-text-muted">{review.date}</TableCell>
+                  <TableCell>
+                    {review.issues.high > 0 ? (
+                      <Badge variant="destructive">{review.issues.high}</Badge>
+                    ) : (
+                      <span className="text-border">-</span>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    {review.issues.med > 0 ? (
+                      <Badge variant="warning">{review.issues.med}</Badge>
+                    ) : (
+                      <span className="text-border">-</span>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    {review.issues.low > 0 ? (
+                      <Badge variant="success">{review.issues.low}</Badge>
+                    ) : (
+                      <span className="text-border">-</span>
+                    )}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <div className="flex items-center justify-end gap-2">
+                      <ShieldCheck className={
+                        review.pylint_score >= 9 ? 'text-success' : 
+                        review.pylint_score >= 7 ? 'text-warning' : 'text-destructive'
+                      } />
+                      <span className="font-semibold">{review.pylint_score}</span>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </Card>
     </div>
   );
 };

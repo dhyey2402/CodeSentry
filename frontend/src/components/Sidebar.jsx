@@ -1,74 +1,156 @@
-import React from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
-import { Home, Upload, Folder, CheckSquare, User, LogOut, Shield } from 'lucide-react';
+import React, { useState } from 'react';
+import { NavLink, useNavigate, useLocation } from 'react-router-dom';
+import { 
+  LayoutDashboard, 
+  Upload as UploadIcon, 
+  FolderGit2, 
+  History, 
+  User, 
+  Settings, 
+  LogOut,
+  ChevronLeft,
+  ChevronRight
+} from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { clearToken } from '../api';
+import { cn } from '../lib/utils';
+import { Tooltip } from './ui/Tooltip';
+import { Logo } from './ui/Logo';
 
-const Sidebar = () => {
+const navItems = [
+  { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
+  { name: 'Upload Code', path: '/upload', icon: UploadIcon },
+  { name: 'Projects', path: '/projects', icon: FolderGit2 },
+  { name: 'History', path: '/reviews', icon: History },
+];
+
+const bottomNavItems = [
+  { name: 'Profile', path: '/profile', icon: User },
+  { name: 'Settings', path: '/settings', icon: Settings },
+];
+
+const Sidebar = ({ isOpen, setIsOpen }) => {
+  const navigate = useNavigate();
   const location = useLocation();
 
-  const menuItems = [
-    { name: 'Dashboard', path: '/dashboard', icon: Home },
-    { name: 'Upload Code', path: '/upload', icon: Upload },
-    { name: 'Projects', path: '/projects', icon: Folder },
-    { name: 'Reviews', path: '/reviews', icon: CheckSquare },
-  ];
+  const handleLogout = () => {
+    clearToken();
+    navigate('/login');
+  };
+
+  const NavItem = ({ item }) => {
+    const Icon = item.icon;
+    const isActive = location.pathname.startsWith(item.path);
+
+    const content = (
+      <NavLink
+        to={item.path}
+        className={cn(
+          "relative flex items-center h-10 px-3 my-1 rounded-md transition-colors group",
+          isActive 
+            ? "bg-accent/10 text-accent font-medium" 
+            : "text-text-secondary hover:bg-surface-hover hover:text-text-primary"
+        )}
+      >
+        {isActive && (
+          <motion.div
+            layoutId="sidebar-active"
+            className="absolute left-0 w-1 h-6 bg-accent rounded-r-full"
+            initial={false}
+            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+          />
+        )}
+        <Icon className={cn("h-5 w-5 flex-shrink-0", isActive ? "text-accent" : "text-text-muted group-hover:text-text-primary")} />
+        
+        <AnimatePresence>
+          {isOpen && (
+            <motion.span
+              initial={{ opacity: 0, width: 0 }}
+              animate={{ opacity: 1, width: "auto" }}
+              exit={{ opacity: 0, width: 0 }}
+              className="ml-3 truncate whitespace-nowrap overflow-hidden"
+            >
+              {item.name}
+            </motion.span>
+          )}
+        </AnimatePresence>
+      </NavLink>
+    );
+
+    if (!isOpen) {
+      return (
+        <Tooltip content={item.name} side="right">
+          {content}
+        </Tooltip>
+      );
+    }
+    return content;
+  };
 
   return (
-    <aside className="apple-panel w-[260px] h-full flex flex-col relative z-20">
-      {/* Brand */}
-      <div className="px-6 py-8 flex items-center gap-3">
-        <div className="w-10 h-10 rounded-2xl flex items-center justify-center bg-white/10 backdrop-blur-md shadow-inner border border-white/20">
-          <Shield className="w-5 h-5 text-white" />
-        </div>
-        <span className="text-xl font-bold tracking-tight text-white">
-          CodeSentry
-        </span>
-      </div>
-
-      {/* Navigation */}
-      <nav className="flex-1 px-4 mt-2">
-        <p className="px-3 mb-4 text-[11px] font-semibold uppercase tracking-widest text-white/40">
-          Main Menu
-        </p>
-        <div className="space-y-1.5">
-          {menuItems.map((item) => {
-            const isActive = location.pathname === item.path || (item.path === '/dashboard' && location.pathname === '/');
-            return (
-              <NavLink
-                key={item.name}
-                to={item.path}
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-[16px] text-[15px] font-medium transition-all duration-300 ${
-                  isActive ? 'bg-white/15 text-white shadow-sm' : 'text-white/60 hover:bg-white/10 hover:text-white'
-                }`}
+    <motion.aside
+      initial={false}
+      animate={{ width: isOpen ? 256 : 72 }}
+      className="relative z-20 flex flex-col h-full bg-surface border-r border-border shrink-0 transition-all duration-300"
+    >
+      <div className="flex items-center h-16 px-4 border-b border-border">
+        <div className="flex items-center gap-2 overflow-hidden text-primary">
+          <Logo className="h-6 w-6 flex-shrink-0 text-accent" />
+          <AnimatePresence>
+            {isOpen && (
+              <motion.span
+                initial={{ opacity: 0, width: 0 }}
+                animate={{ opacity: 1, width: "auto" }}
+                exit={{ opacity: 0, width: 0 }}
+                className="font-bold text-lg tracking-tight whitespace-nowrap overflow-hidden"
               >
-                <item.icon className="w-[18px] h-[18px]" strokeWidth={isActive ? 2.5 : 2} />
-                {item.name}
-              </NavLink>
-            );
-          })}
-        </div>
-      </nav>
-
-      {/* Bottom Section */}
-      <div className="p-4 mx-4 mb-4 rounded-[20px] bg-white/5 border border-white/10">
-        <div className="space-y-1">
-          <NavLink
-            to="/profile"
-            className={`flex items-center gap-3 px-3 py-2.5 rounded-[14px] text-[15px] font-medium transition-all duration-300 ${
-              location.pathname === '/profile' ? 'bg-white/15 text-white' : 'text-white/60 hover:bg-white/10 hover:text-white'
-            }`}
-          >
-            <User className="w-[18px] h-[18px]" />
-            Profile
-          </NavLink>
-          <button
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-[14px] text-[15px] font-medium transition-all duration-300 cursor-pointer text-[#FF375F] hover:bg-[#FF375F]/10 border-none bg-transparent"
-          >
-            <LogOut className="w-[18px] h-[18px]" />
-            Logout
-          </button>
+                CodeSentry
+              </motion.span>
+            )}
+          </AnimatePresence>
         </div>
       </div>
-    </aside>
+
+      <div className="flex-1 px-3 py-4 overflow-y-auto overflow-x-hidden">
+        <div className="space-y-1">
+          {navItems.map((item) => (
+            <NavItem key={item.path} item={item} />
+          ))}
+        </div>
+      </div>
+
+      <div className="p-3 border-t border-border space-y-1">
+        {bottomNavItems.map((item) => (
+          <NavItem key={item.path} item={item} />
+        ))}
+        
+        {isOpen ? (
+          <button
+            onClick={handleLogout}
+            className="flex items-center w-full h-10 px-3 my-1 rounded-md text-text-secondary hover:bg-destructive/10 hover:text-destructive transition-colors group"
+          >
+            <LogOut className="h-5 w-5 flex-shrink-0 text-text-muted group-hover:text-destructive" />
+            <span className="ml-3 font-medium">Logout</span>
+          </button>
+        ) : (
+          <Tooltip content="Logout" side="right">
+            <button
+              onClick={handleLogout}
+              className="flex items-center justify-center w-full h-10 my-1 rounded-md text-text-secondary hover:bg-destructive/10 hover:text-destructive transition-colors group"
+            >
+              <LogOut className="h-5 w-5 text-text-muted group-hover:text-destructive" />
+            </button>
+          </Tooltip>
+        )}
+      </div>
+
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="absolute -right-3 top-20 flex items-center justify-center h-6 w-6 rounded-full bg-background border border-border shadow-sm text-text-muted hover:text-text-primary z-30 transition-colors"
+      >
+        {isOpen ? <ChevronLeft className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
+      </button>
+    </motion.aside>
   );
 };
 

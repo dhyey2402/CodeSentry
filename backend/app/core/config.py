@@ -19,6 +19,11 @@ class Settings(BaseSettings):
     PROJECT_NAME: str = "AI Code Review Assistant"
     API_V1_STR: str = "/api/v1"
 
+    # API Keys
+    MISTRAL_API_KEY: Optional[str] = None
+    OPENAI_API_KEY: Optional[str] = None
+    AI_BASE_URL: str = "https://api.mistral.ai/v1"
+
     # Security
     SECRET_KEY: str
     ALGORITHM: str = "HS256"

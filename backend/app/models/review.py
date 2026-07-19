@@ -21,6 +21,17 @@ class Review(Base):
     status = Column(String(50), default="PENDING") # PENDING, PROCESSING, COMPLETED, FAILED
     summary = Column(Text)
     
+    # Static Analysis Metrics
+    pylint_score = Column(String(10), nullable=True)
+    bandit_summary = Column(Text, nullable=True) # E.g., JSON string or summary text
+    maintainability_index = Column(String(20), nullable=True)
+    cyclomatic_complexity = Column(String(20), nullable=True)
+    
+    # AI Review Metrics
+    ai_score = Column(String(10), nullable=True)
+    ai_summary = Column(Text, nullable=True) # JSON structured text
+    documentation = Column(Text, nullable=True) # Markdown text
+    
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 

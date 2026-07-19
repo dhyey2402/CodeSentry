@@ -6,7 +6,7 @@ Represents an individual issue found during a code review.
 """
 
 import uuid
-from sqlalchemy import Column, String, Text, Integer, DateTime, ForeignKey
+from sqlalchemy import Column, String, Text, Integer, DateTime, ForeignKey, JSON
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
@@ -25,6 +25,7 @@ class ReviewFinding(Base):
     issue_type = Column(String(50)) # Security, Performance, Style, etc.
     description = Column(Text, nullable=False)
     suggestion = Column(Text)
+    extra_data = Column(JSON, nullable=True, default={})
     
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())

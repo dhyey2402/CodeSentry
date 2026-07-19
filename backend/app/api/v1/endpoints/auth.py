@@ -12,7 +12,7 @@ from sqlalchemy.orm import Session
 from app.api.deps import SessionDep, CurrentUser
 from app.core import security
 from app.models.user import User
-from app.schemas.user import UserCreate, UserResponse
+from app.schemas.user import UserCreate, UserResponse, UserUpdate
 from app.schemas.token import Token
 
 router = APIRouter()
@@ -73,4 +73,26 @@ def read_current_user(current_user: CurrentUser) -> Any:
     Get current user profile.
     This route is protected because it depends on `CurrentUser`.
     """
+    return current_user
+
+@router.put("/me", response_model=UserResponse)
+def update_current_user(
+    *,
+    db: SessionDep,
+    current_user: CurrentUser,
+    user_in: UserUpdate
+) -> Any:
+    """
+    Update current user profile and preferences.
+    """
+    if user_in.full_name is not None:
+        current_user.full_name = user_in.full_name
+    if user_in.password is not None:
+        current_user.hashed_password = security.get_password_hash(user_in.password)
+    if user_in.preferences is not None:
+        current_user.preferences = user_in.preferences
+        
+    db.add(current_user)
+    db.commit()
+    db.refresh(current_user)
     return current_user

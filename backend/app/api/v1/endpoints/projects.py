@@ -63,6 +63,29 @@ def read_project(
         raise HTTPException(status_code=400, detail="Not enough permissions")
     return project
 
+@router.get("/{id}/code")
+def read_project_code(
+    *,
+    db: Session = Depends(deps.get_db),
+    id: UUID,
+    current_user: User = Depends(deps.get_current_user),
+) -> Any:
+    """
+    Get raw code for a project by ID.
+    """
+    project = db.query(Project).filter(Project.id == id).first()
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+    if project.owner_id != current_user.id:
+        raise HTTPException(status_code=400, detail="Not enough permissions")
+        
+    try:
+        with open(project.file_path, "r", encoding="utf-8") as f:
+            code = f.read()
+        return {"code": code, "file_path": project.file_path}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to read file: {str(e)}")
+
 @router.post("/upload", response_model=ProjectSchema)
 def upload_file(
     *,

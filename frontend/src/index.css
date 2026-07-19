@@ -1,50 +1,192 @@
 @import "tailwindcss";
 
-/* ===================================================
-   CodeSentry Design System — Apple iOS / VisionOS Style
-   =================================================== */
-
 @theme {
-  --color-text-primary: #ffffff;
-  --color-text-secondary: rgba(255, 255, 255, 0.6);
-  --color-text-muted: rgba(255, 255, 255, 0.4);
-
-  --color-accent-blue: #0A84FF;
-  --color-accent-indigo: #5E5CE6;
-  --color-accent-purple: #BF5AF2;
-  --color-accent-pink: #FF375F;
-  --color-accent-green: #32D74B;
-  --color-accent-orange: #FF9F0A;
-
   --font-family-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-family-mono: "JetBrains Mono", "Fira Code", "ui-monospace", SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 
-  --animate-fade-in: fade-in 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
-  --animate-slide-up: slide-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+  /* Custom radius for consistent SaaS look */
+  --radius-sm: 0.25rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-2xl: 1.25rem;
 }
 
-/* --- Keyframe Animations --- */
-@keyframes fade-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
+/* Base layer variables for theming */
+@layer base {
+  :root {
+    --background: #FFFFFF;
+    --surface: #FAFAFA;
+    --surface-hover: #F4F4F5;
+    
+    --border: #E4E4E7;
+    --border-hover: #D4D4D8;
+    
+    --text-primary: #18181B;
+    --text-secondary: #52525B;
+    --text-muted: #A1A1AA;
+    
+    --primary: #000000;
+    --primary-foreground: #FFFFFF;
+    
+    --accent: #4F46E5;
+    --accent-hover: #4338CA;
+    --accent-foreground: #FFFFFF;
+    
+    --destructive: #EF4444;
+    --destructive-foreground: #FFFFFF;
+    
+    --success: #10B981;
+    --success-foreground: #FFFFFF;
+    
+    --warning: #F59E0B;
+    --warning-foreground: #FFFFFF;
+    
+    --ring: #4F46E5;
+  }
+  
+  .dark {
+    --background: #09090B;
+    --surface: #18181B;
+    --surface-hover: #27272A;
+    
+    --border: #27272A;
+    --border-hover: #3F3F46;
+    
+    --text-primary: #FAFAFA;
+    --text-secondary: #A1A1AA;
+    --text-muted: #71717A;
+    
+    --primary: #FFFFFF;
+    --primary-foreground: #09090B;
+    
+    --accent: #6366F1;
+    --accent-hover: #818CF8;
+    --accent-foreground: #FFFFFF;
+    
+    --destructive: #F87171;
+    --destructive-foreground: #FFFFFF;
+    
+    --success: #34D399;
+    --success-foreground: #FFFFFF;
+    
+    --warning: #FBBF24;
+    --warning-foreground: #FFFFFF;
+    
+    --ring: #6366F1;
+  }
+
+  .github-dark {
+    --background: #0d1117; --surface: #161b22; --surface-hover: #21262d;
+    --border: #30363d; --border-hover: #8b949e;
+    --text-primary: #c9d1d9; --text-secondary: #8b949e; --text-muted: #6e7681;
+    --primary: #58a6ff; --primary-foreground: #ffffff;
+    --accent: #58a6ff; --accent-hover: #79c0ff; --accent-foreground: #ffffff;
+    --destructive: #f85149; --destructive-foreground: #ffffff;
+    --success: #2ea043; --success-foreground: #ffffff;
+    --warning: #d29922; --warning-foreground: #ffffff;
+  }
+
+  .github-light {
+    --background: #ffffff; --surface: #f6f8fa; --surface-hover: #f3f4f6;
+    --border: #d0d7de; --border-hover: #afb8c1;
+    --text-primary: #24292f; --text-secondary: #57606a; --text-muted: #6e7781;
+    --primary: #0969da; --primary-foreground: #ffffff;
+    --accent: #0969da; --accent-hover: #0550ae; --accent-foreground: #ffffff;
+    --destructive: #cf222e; --destructive-foreground: #ffffff;
+    --success: #1a7f37; --success-foreground: #ffffff;
+    --warning: #9a6700; --warning-foreground: #ffffff;
+  }
+
+  .vscode-dark {
+    --background: #1e1e1e; --surface: #252526; --surface-hover: #2d2d30;
+    --border: #3e3e42; --border-hover: #454545;
+    --text-primary: #cccccc; --text-secondary: #999999; --text-muted: #666666;
+    --primary: #007acc; --primary-foreground: #ffffff;
+    --accent: #007acc; --accent-hover: #0098ff; --accent-foreground: #ffffff;
+    --destructive: #f48771; --destructive-foreground: #ffffff;
+    --success: #89d185; --success-foreground: #ffffff;
+    --warning: #cca700; --warning-foreground: #ffffff;
+  }
+
+  .dracula {
+    --background: #282a36; --surface: #44475a; --surface-hover: #6272a4;
+    --border: #6272a4; --border-hover: #f8f8f2;
+    --text-primary: #f8f8f2; --text-secondary: #bfbfbf; --text-muted: #8b8b8b;
+    --primary: #bd93f9; --primary-foreground: #282a36;
+    --accent: #ff79c6; --accent-hover: #ff92d0; --accent-foreground: #282a36;
+    --destructive: #ff5555; --destructive-foreground: #f8f8f2;
+    --success: #50fa7b; --success-foreground: #282a36;
+    --warning: #f1fa8c; --warning-foreground: #282a36;
+  }
+
+  .nord {
+    --background: #2e3440; --surface: #3b4252; --surface-hover: #434c5e;
+    --border: #4c566a; --border-hover: #d8dee9;
+    --text-primary: #eceff4; --text-secondary: #e5e9f0; --text-muted: #d8dee9;
+    --primary: #88c0d0; --primary-foreground: #2e3440;
+    --accent: #8fbcbb; --accent-hover: #88c0d0; --accent-foreground: #2e3440;
+    --destructive: #bf616a; --destructive-foreground: #eceff4;
+    --success: #a3be8c; --success-foreground: #2e3440;
+    --warning: #ebcb8b; --warning-foreground: #2e3440;
+  }
+
+  .tokyo-night {
+    --background: #1a1b26; --surface: #24283b; --surface-hover: #292e42;
+    --border: #414868; --border-hover: #565f89;
+    --text-primary: #c0caf5; --text-secondary: #a9b1d6; --text-muted: #565f89;
+    --primary: #7aa2f7; --primary-foreground: #1a1b26;
+    --accent: #bb9af7; --accent-hover: #7aa2f7; --accent-foreground: #1a1b26;
+    --destructive: #f7768e; --destructive-foreground: #1a1b26;
+    --success: #9ece6a; --success-foreground: #1a1b26;
+    --warning: #e0af68; --warning-foreground: #1a1b26;
+  }
+
+  .catppuccin {
+    --background: #1e1e2e; --surface: #181825; --surface-hover: #313244;
+    --border: #45475a; --border-hover: #585b70;
+    --text-primary: #cdd6f4; --text-secondary: #bac2de; --text-muted: #a6adc8;
+    --primary: #89b4fa; --primary-foreground: #1e1e2e;
+    --accent: #cba6f7; --accent-hover: #b4befe; --accent-foreground: #1e1e2e;
+    --destructive: #f38ba8; --destructive-foreground: #1e1e2e;
+    --success: #a6e3a1; --success-foreground: #1e1e2e;
+    --warning: #f9e2af; --warning-foreground: #1e1e2e;
+  }
+
+  .gruvbox {
+    --background: #282828; --surface: #3c3836; --surface-hover: #504945;
+    --border: #665c54; --border-hover: #a89984;
+    --text-primary: #ebdbb2; --text-secondary: #d5c4a1; --text-muted: #928374;
+    --primary: #fe8019; --primary-foreground: #282828;
+    --accent: #fabd2f; --accent-hover: #fe8019; --accent-foreground: #282828;
+    --destructive: #fb4934; --destructive-foreground: #282828;
+    --success: #b8bb26; --success-foreground: #282828;
+    --warning: #fabd2f; --warning-foreground: #282828;
+  }
+  
+  .monokai {
+    --background: #272822; --surface: #3e3d32; --surface-hover: #49483e;
+    --border: #75715e; --border-hover: #f8f8f2;
+    --text-primary: #f8f8f2; --text-secondary: #cfcfc2; --text-muted: #8f8f8f;
+    --primary: #f92672; --primary-foreground: #272822;
+    --accent: #fd971f; --accent-hover: #e6db74; --accent-foreground: #272822;
+    --destructive: #f92672; --destructive-foreground: #f8f8f2;
+    --success: #a6e22e; --success-foreground: #272822;
+    --warning: #e6db74; --warning-foreground: #272822;
+  }
+
+  .solarized {
+    --background: #002b36; --surface: #073642; --surface-hover: #586e75;
+    --border: #586e75; --border-hover: #839496;
+    --text-primary: #839496; --text-secondary: #93a1a1; --text-muted: #657b83;
+    --primary: #268bd2; --primary-foreground: #002b36;
+    --accent: #2aa198; --accent-hover: #268bd2; --accent-foreground: #002b36;
+    --destructive: #dc322f; --destructive-foreground: #839496;
+    --success: #859900; --success-foreground: #002b36;
+    --warning: #b58900; --warning-foreground: #002b36;
+  }
 }
 
-@keyframes slide-up {
-  from { opacity: 0; transform: translateY(30px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes mesh-movement {
-  0% { background-position: 0% 0%; }
-  50% { background-position: 100% 100%; }
-  100% { background-position: 0% 0%; }
-}
-
-@keyframes float-slow {
-  0%, 100% { transform: translateY(0) scale(1); }
-  50% { transform: translateY(-20px) scale(1.05); }
-}
-
-/* --- Global Base Styles --- */
 @layer base {
   *, *::before, *::after {
     box-sizing: border-box;
@@ -53,179 +195,133 @@
   html {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    letter-spacing: -0.015em; /* Tighter Apple-like tracking */
   }
 
   body {
     margin: 0;
     font-family: var(--font-family-sans);
-    color: #ffffff;
-    background-color: #000000;
-    overflow-x: hidden;
+    color: var(--text-primary);
+    background-color: var(--background);
+    transition: background-color 0.3s ease, color 0.3s ease;
   }
 
-  /* Custom ambient mesh background for the entire app */
-  .apple-ambient-bg {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    z-index: -1;
-    background-color: #050508;
-    overflow: hidden;
-  }
-
-  .ambient-blob-1, .ambient-blob-2, .ambient-blob-3 {
-    position: absolute;
-    border-radius: 50%;
-    filter: blur(140px);
-    opacity: 0.25;
-    animation: float-slow 20s infinite ease-in-out;
-  }
-
-  .ambient-blob-1 {
-    top: -10%; left: -10%;
-    width: 60vw; height: 60vw;
-    background: radial-gradient(circle, #5E5CE6 0%, transparent 70%);
-    animation-delay: 0s;
-  }
-
-  .ambient-blob-2 {
-    bottom: -20%; right: -10%;
-    width: 70vw; height: 70vw;
-    background: radial-gradient(circle, #BF5AF2 0%, transparent 70%);
-    animation-delay: -5s;
-  }
-
-  .ambient-blob-3 {
-    top: 40%; left: 30%;
-    width: 50vw; height: 50vw;
-    background: radial-gradient(circle, #0A84FF 0%, transparent 70%);
-    animation-delay: -10s;
-  }
-
-  ::selection {
-    background: rgba(94, 92, 230, 0.4);
-  }
-
+  /* Premium Scrollbar */
   ::-webkit-scrollbar {
-    width: 0px; /* Hidden scrollbar for cleaner iOS look */
+    width: 8px;
+    height: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 9999px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--border-hover);
   }
 }
 
-/* --- Reusable Utility Classes --- */
+@layer utilities {
+  .bg-background { background-color: var(--background); }
+  .bg-surface { background-color: var(--surface); }
+  .bg-surface-hover { background-color: var(--surface-hover); }
+  
+  .border-border { border-color: var(--border); }
+  .border-border-hover { border-color: var(--border-hover); }
+  
+  .text-primary { color: var(--text-primary); }
+  .text-secondary { color: var(--text-secondary); }
+  .text-muted { color: var(--text-muted); }
+  
+  .bg-primary { background-color: var(--primary); color: var(--primary-foreground); }
+  .bg-accent { background-color: var(--accent); color: var(--accent-foreground); }
+  .bg-destructive { background-color: var(--destructive); color: var(--destructive-foreground); }
+  .bg-success { background-color: var(--success); color: var(--success-foreground); }
+  .bg-warning { background-color: var(--warning); color: var(--warning-foreground); }
+}
+
+/* Custom Markdown Prose Styles for AI Chat */
 @layer components {
-  /* Ultra-Premium Glass Effect (Cards, Modals) */
-  .apple-glass {
-    background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(40px) saturate(180%);
-    -webkit-backdrop-filter: blur(40px) saturate(180%);
-    border: 0.5px solid rgba(255, 255, 255, 0.15);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.1);
-    border-radius: 24px;
-    transition: all 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+  .prose {
+    color: var(--text-primary);
+    line-height: 1.6;
   }
-
-  .apple-glass:hover {
-    background: rgba(255, 255, 255, 0.08);
-    border: 0.5px solid rgba(255, 255, 255, 0.3);
-    transform: translateY(-4px) scale(1.01);
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  .prose p {
+    margin-top: 0.75em;
+    margin-bottom: 0.75em;
   }
-
-  /* Floating Panels (Sidebar, Navbar) */
-  .apple-panel {
-    background: rgba(10, 10, 10, 0.4);
-    backdrop-filter: blur(50px) saturate(200%);
-    -webkit-backdrop-filter: blur(50px) saturate(200%);
-    border: 0.5px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
-    border-radius: 32px;
+  .prose p:first-child {
+    margin-top: 0;
   }
-
-  /* Glass Input Fields */
-  .apple-input {
-    background: rgba(0, 0, 0, 0.2);
-    border: 0.5px solid rgba(255, 255, 255, 0.1);
-    border-radius: 12px;
-    padding: 12px 16px;
-    color: #ffffff;
-    font-size: 0.9375rem; /* 15px - Apple standard */
-    outline: none;
-    transition: all 0.2s ease;
-    width: 100%;
+  .prose p:last-child {
+    margin-bottom: 0;
+  }
+  .prose a {
+    color: var(--accent);
+    text-decoration: underline;
+    font-weight: 500;
+  }
+  .prose strong {
+    font-weight: 600;
+    color: inherit;
+  }
+  .prose ul {
+    list-style-type: disc;
+    padding-left: 1.5em;
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
+  }
+  .prose ol {
+    list-style-type: decimal;
+    padding-left: 1.5em;
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
+  }
+  .prose li {
+    margin-top: 0.25em;
+    margin-bottom: 0.25em;
+  }
+  /* Inline code */
+  .prose code {
+    font-family: var(--font-family-mono);
+    font-size: 0.875em;
+    background-color: var(--surface-hover);
+    padding: 0.2em 0.4em;
+    border-radius: 0.25rem;
+    color: var(--text-primary);
+    border: 1px solid var(--border);
+  }
+  /* Code blocks */
+  .prose pre {
+    background-color: #0d1117; /* GitHub Dark style for code blocks */
+    color: #c9d1d9;
+    padding: 1em;
+    border-radius: var(--radius-md);
+    overflow-x: auto;
+    margin-top: 1em;
+    margin-bottom: 1em;
+    border: 1px solid var(--border);
     box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
   }
-
-  .apple-input::placeholder {
-    color: rgba(255, 255, 255, 0.4);
-  }
-
-  .apple-input:focus {
-    border-color: rgba(255, 255, 255, 0.3);
-    background: rgba(0, 0, 0, 0.3);
-    box-shadow: 0 0 0 3px rgba(94, 92, 230, 0.3), inset 0 2px 4px rgba(0,0,0,0.1);
-  }
-
-  /* Apple Solid Buttons */
-  .apple-btn-primary {
-    background: #ffffff;
-    color: #000000;
+  .prose pre code {
+    background-color: transparent;
+    padding: 0;
+    border-radius: 0;
+    color: inherit;
     border: none;
-    border-radius: 9999px; /* Pill shape */
-    padding: 12px 24px;
+    font-size: 0.875em;
+  }
+  .prose h1, .prose h2, .prose h3, .prose h4 {
+    color: var(--text-primary);
     font-weight: 600;
-    font-size: 0.9375rem;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    box-shadow: 0 4px 12px rgba(255, 255, 255, 0.15);
+    margin-top: 1.5em;
+    margin-bottom: 0.5em;
   }
-
-  .apple-btn-primary:hover {
-    transform: scale(1.02);
-    box-shadow: 0 6px 16px rgba(255, 255, 255, 0.25);
-    background: #f0f0f5;
+  .prose h3 {
+    font-size: 1.25em;
   }
-
-  .apple-btn-primary:active {
-    transform: scale(0.98);
+  .prose h4 {
+    font-size: 1.1em;
   }
-
-  /* Apple Translucent Buttons */
-  .apple-btn-glass {
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    color: #ffffff;
-    border: 0.5px solid rgba(255, 255, 255, 0.1);
-    border-radius: 9999px;
-    padding: 10px 20px;
-    font-weight: 500;
-    font-size: 0.9375rem;
-    cursor: pointer;
-    transition: all 0.2s ease;
-  }
-
-  .apple-btn-glass:hover {
-    background: rgba(255, 255, 255, 0.15);
-    border-color: rgba(255, 255, 255, 0.2);
-  }
-
-  /* Mini Badges */
-  .apple-badge {
-    display: inline-flex;
-    align-items: center;
-    padding: 4px 10px;
-    border-radius: 8px;
-    font-size: 0.75rem;
-    font-weight: 600;
-    backdrop-filter: blur(10px);
-    border: 0.5px solid rgba(255,255,255,0.1);
-  }
-
-  .apple-badge-blue { background: rgba(10, 132, 255, 0.15); color: #5E5CE6; }
-  .apple-badge-green { background: rgba(50, 215, 75, 0.15); color: #32D74B; }
-  .apple-badge-orange { background: rgba(255, 159, 10, 0.15); color: #FF9F0A; }
-  .apple-badge-red { background: rgba(255, 55, 95, 0.15); color: #FF375F; }
 }

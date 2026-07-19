@@ -10,6 +10,7 @@ class FindingBase(BaseModel):
     issue_type: Optional[str] = None
     description: str
     suggestion: Optional[str] = None
+    extra_data: Optional[dict] = None
 
 class FindingCreate(FindingBase):
     review_id: UUID

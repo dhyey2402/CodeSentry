@@ -8,65 +8,43 @@ import Register from './pages/Register';
 import Upload from './pages/Upload';
 import Projects from './pages/Projects';
 import Reviews from './pages/Reviews';
+import Workspace from './pages/Workspace';
+import ReviewDetails from './pages/ReviewDetails';
+import ReviewReplay from './pages/ReviewReplay';
 import Profile from './pages/Profile';
 import NotFound from './pages/NotFound';
 
 // Layout
-import Sidebar from './components/Sidebar';
-import Navbar from './components/Navbar';
-
-// Dummy Auth Check
-const isAuthenticated = () => {
-  return true; 
-};
-
-// Global Ambient Background for the entire app
-const AmbientBackground = () => (
-  <div className="apple-ambient-bg">
-    <div className="ambient-blob-1"></div>
-    <div className="ambient-blob-2"></div>
-    <div className="ambient-blob-3"></div>
-  </div>
-);
-
-const ProtectedRoute = ({ children }) => {
-  if (!isAuthenticated()) {
-    return <Navigate to="/login" replace />;
-  }
-  return (
-    <>
-      <AmbientBackground />
-      {/* Floating layout container */}
-      <div className="flex h-screen p-4 gap-4 overflow-hidden text-white">
-        <Sidebar />
-        <div className="flex-1 flex flex-col gap-4 overflow-hidden relative">
-          <Navbar />
-          <main className="flex-1 overflow-x-hidden overflow-y-auto rounded-[32px] pb-6">
-            {children}
-          </main>
-        </div>
-      </div>
-    </>
-  );
-};
+import { AppLayout } from './components/AppLayout';
+import { CommandPalette } from './components/CommandPalette';
 
 function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/login" element={<><AmbientBackground /><Login /></>} />
-        <Route path="/register" element={<><AmbientBackground /><Register /></>} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
         
-        {/* Protected Routes */}
-        <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-        <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-        <Route path="/upload" element={<ProtectedRoute><Upload /></ProtectedRoute>} />
-        <Route path="/projects" element={<ProtectedRoute><Projects /></ProtectedRoute>} />
-        <Route path="/reviews" element={<ProtectedRoute><Reviews /></ProtectedRoute>} />
-        <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+        {/* Workspace Route without Layout */}
+        <Route path="/reviews/:id/workspace" element={
+          <>
+            <CommandPalette />
+            <Workspace />
+          </>
+        } />
+        
+        {/* Protected Routes wrapped in AppLayout */}
+        <Route path="/" element={<AppLayout><CommandPalette /><Dashboard /></AppLayout>} />
+        <Route path="/dashboard" element={<AppLayout><CommandPalette /><Dashboard /></AppLayout>} />
+        <Route path="/upload" element={<AppLayout><CommandPalette /><Upload /></AppLayout>} />
+        <Route path="/projects" element={<AppLayout><CommandPalette /><Projects /></AppLayout>} />
+        <Route path="/reviews" element={<AppLayout><CommandPalette /><Reviews /></AppLayout>} />
+        <Route path="/reviews/:id" element={<AppLayout><CommandPalette /><ReviewDetails /></AppLayout>} />
+        <Route path="/reviews/replay" element={<AppLayout><CommandPalette /><ReviewReplay /></AppLayout>} />
+        <Route path="/profile" element={<AppLayout><CommandPalette /><Profile /></AppLayout>} />
         
         {/* 404 Route */}
-        <Route path="*" element={<><AmbientBackground /><NotFound /></>} />
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </Router>
   );
