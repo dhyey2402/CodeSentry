@@ -84,6 +84,7 @@ def generate_ai_review(code: str, user_preferences: Dict[str, Any] = None) -> Di
                 {"role": "user", "content": prompt}
             ],
             temperature=0.2,
+            max_tokens=8000,
             response_format={"type": "json_object"}
         )
         
