@@ -30,17 +30,22 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
 
     # Database
-    POSTGRES_SERVER: str
-    POSTGRES_USER: str
-    POSTGRES_PASSWORD: str
-    POSTGRES_DB: str
-    POSTGRES_PORT: str
+    DATABASE_URL: Optional[str] = None
+    POSTGRES_SERVER: Optional[str] = None
+    POSTGRES_USER: Optional[str] = None
+    POSTGRES_PASSWORD: Optional[str] = None
+    POSTGRES_DB: Optional[str] = None
+    POSTGRES_PORT: Optional[str] = "5432"
 
     @property
     def SQLALCHEMY_DATABASE_URI(self) -> str:
         """
-        Constructs the SQLAlchemy database URI from components.
+        Constructs the SQLAlchemy database URI from components or uses DATABASE_URL.
         """
+        if self.DATABASE_URL:
+            # Convert standard postgresql:// prefix to use psycopg driver if necessary
+            return self.DATABASE_URL.replace("postgresql://", "postgresql+psycopg://")
+            
         import urllib.parse
         encoded_password = urllib.parse.quote_plus(self.POSTGRES_PASSWORD)
         return f"postgresql+psycopg://{self.POSTGRES_USER}:{encoded_password}@{self.POSTGRES_SERVER}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
